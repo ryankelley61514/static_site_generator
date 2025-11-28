@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from main import text_node_to_html_node
+from functions import text_node_to_html_node, split_nodes_delimiter
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -47,6 +47,45 @@ class TestTextNode(unittest.TestCase):
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "img")
         self.assertEqual(html_node.to_html(), '<img src="https://boot.dev" alt="This is an image node">')
+
+    def test_bold_split(self):
+        node = TextNode("This is a text node with **bold Markdown**", TextType.TEXT)
+        self.assertEqual(
+            split_nodes_delimiter([node], "**", TextType.BOLD),
+            [
+                TextNode("This is a text node with ", TextType.TEXT),
+                TextNode("bold Markdown", TextType.BOLD)
+            ]
+        )
+
+    def test_italic_split(self):
+        node = TextNode("This is a text node with _italic_ Markdown", TextType.TEXT)
+        self.assertEqual(
+            split_nodes_delimiter([node], "_", TextType.ITALIC),
+            [
+                TextNode("This is a text node with ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" Markdown", TextType.TEXT)
+            ]
+        )
+
+    def test_multiple_code_split(self):
+        node = TextNode("This is a `text node` with `multiple code` blocks", TextType.TEXT)
+        self.assertEqual(
+            split_nodes_delimiter([node], "`", TextType.CODE),
+            [
+                TextNode("This is a ", TextType.TEXT),
+                TextNode("text node", TextType.CODE),
+                TextNode(" with ", TextType.TEXT),
+                TextNode("multiple code", TextType.CODE),
+                TextNode(" blocks", TextType.TEXT)
+            ]
+        )
+
+    def test_non_text_split(self):
+        node = TextNode("This is a text node with bold Markdown", TextType.BOLD)
+        with self.assertRaises(Exception):
+            split_nodes_delimiter(node)
 
 if __name__ == "__main__":
     unittest.main()
