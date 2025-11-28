@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from functions import text_node_to_html_node, split_nodes_delimiter
+from functions import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -86,6 +86,18 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is a text node with bold Markdown", TextType.BOLD)
         with self.assertRaises(Exception):
             split_nodes_delimiter(node)
+
+    def test_extract_markdown_images(self):
+        images = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], images)
+
+    def test_extract_markdown_links(self):
+        links = extract_markdown_links(
+            "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"
+        )
+        self.assertListEqual([("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")], links)
 
 if __name__ == "__main__":
     unittest.main()
